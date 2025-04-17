@@ -1,25 +1,38 @@
 import SwiftUI
+import CoreMotion
 
 struct ContentView: View {
-    @State var isOn = false
+    @StateObject private var motionManager = MotionManager()
+    @State private var score: Int?
+
     var body: some View {
-        VStack {
-            Circle()
-                .frame(maxHeight: 200)                .foregroundColor(/*#-code-walkthrough(conditionalCircle.ternary)*/ isOn ? .primary : .secondary /*#-code-walkthrough(conditionalCircle.ternary)*/)        .shadow(color: isOn ? .red : .orange, radius:20)
-            /*#-code-walkthrough(conditionalCircle.foregroundColor)*/
-                .scaleEffect(isOn ? 1:0.75)
-                .animation(.easeIn, value: isOn)
-            if isOn{
-                Text("on")
+        VStack(spacing: 20) {
+            Text("Driving Score")
+                .font(.largeTitle)
+                .bold()
+
+            Text("Acceleration: \(String(format: "%.2f", motionManager.totalAcceleration)) m/s²")
+            Text("Harsh Moves: \(motionManager.harshMoves)")
+
+            if let score = score {
+                Text("Score: \(score)/100")
+                    .font(.title)
+                    .foregroundColor(.blue)
             }
-            else{
-                Text("of")
+
+            Button("End Session") {
+                motionManager.stopUpdates()
+                let rawScore = 100 - motionManager.harshMoves * 5
+                score = max(0, rawScore)
             }
-            
-            Button("Press Me") {
-                isOn.toggle()
-            }
+            .padding()
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(10)
         }
-    }       
-    
+        .padding()
+        .onAppear {
+            motionManager.startUpdates()
+        }
+    }
 }
